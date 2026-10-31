@@ -15,4 +15,4 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - run: curl -sf --max-time 60 https://aangan-engine.onrender.com/healthz
+      - run: curl -sf --max-time 60 https://api.apney.tech/healthz
