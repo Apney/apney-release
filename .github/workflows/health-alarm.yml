@@ -1,0 +1,39 @@
+# Plan 214: an alarm for the day Neo4j quietly drops out.
+#
+# Aura sat paused for days in October 2026 and every relationship was named by
+# a fallback without anyone noticing. Every three hours this asks the engine
+# how it is, and the run fails when it is not answering, Neo4j is down, the
+# sync is failing, or the heartbeat (Plan 213) is more than 30 minutes old.
+# GitHub emails the repo owner about a failed run. GitHub delays scheduled
+# runs at times, which is fine for an alarm.
+#
+# A sleeping engine is woken by the first request and connects to Neo4j a
+# moment later, so it gets three tries a minute apart before calling it.
+name: engine health alarm
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask /healthz
+        run: |
+          problem=""
+          for try in 1 2 3; do
+            [ "$try" -gt 1 ] && sleep 60
+            body=$(curl -sf --max-time 90 https://api.apney.tech/healthz) || { problem="the engine did not answer"; continue; }
+            if [ "$(echo "$body" | jq -r '.neo4j')" != "true" ]; then problem="Neo4j is not connected"; continue; fi
+            if [ "$(echo "$body" | jq -r '.graph_sync_failing')" = "true" ]; then problem="the graph sync is failing"; continue; fi
+            beat=$(echo "$body" | jq -r '.graph_heartbeat_at // empty')
+            # Missing until Plan 213 reaches main; checked whenever it is there.
+            if [ -n "$beat" ]; then
+              age=$(( $(date -u +%s) - $(date -u -d "$beat" +%s) ))
+              if [ "$age" -gt 1800 ]; then problem="the last Neo4j heartbeat was $((age / 60)) minutes ago"; continue; fi
+            fi
+            echo "healthy: $body"
+            exit 0
+          done
+          echo "::error::$problem"
+          exit 1
