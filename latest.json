@@ -1,6 +1,6 @@
 {
-  "version": "3.0.0",
-  "build": 8070,
-  "url": "https://app.apney.tech/apney_android_v3.0.0.apk",
-  "notes": "A major update: family accounts with PINs, QR and contact adding, automatic merging of the same relative, Important dates, event invite links, and a cleaner look throughout."
+  "version": "4.0.0",
+  "build": 8071,
+  "url": "https://app.apney.tech/apney_android_v4.0.0.apk",
+  "notes": "A new look and new places: Buzz with Chats, Calls and Aangan posts, a redesigned Feed, Trunk with a photo calendar, Nest search, richer profiles, and Settings in sections."
 }
